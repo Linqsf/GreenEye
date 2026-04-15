@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GreenEye">
+<meta name="theme-color" content="#1a2e1a">
+<title>GreenEye</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a2e1a;
+    --green-mid: #2d4a2d;
+    --green-bright: #4a7c4a;
+    --green-light: #7fb87f;
+    --green-pale: #c8e6c8;
+    --green-mist: #f0f7f0;
+    --amber: #c8820a;
+    --amber-light: #fef3dc;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --cream: #faf8f4;
+    --ink: #1a1a18;
+    --muted: #6b7060;
+    --border: rgba(26,46,26,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; max-width: 480px; margin: 0 auto; overflow-x: hidden; }
+  .header { background: var(--green-deep); padding: 56px 24px 24px; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 180px; height: 180px; border-radius: 50%; background: rgba(74,124,74,0.25); }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--green-pale); letter-spacing: -0.5px; position: relative; z-index: 1; }
+  .logo span { color: var(--green-light); font-style: italic; }
+  .tagline { font-size: 13px; color: rgba(200,230,200,0.65); margin-top: 4px; position: relative; z-index: 1; font-weight: 300; }
+  .header-actions { position: absolute; top: 16px; right: 16px; z-index: 2; }
+  .upload-section { padding: 20px 20px 0; }
+  .section-label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .photo-slot { aspect-ratio: 1; border-radius: var(--radius-sm); border: 1.5px dashed var(--green-bright); background: var(--green-mist); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: all 0.15s; }
+  .photo-slot:active { transform: scale(0.97); }
+  .photo-slot.filled { border-style: solid; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slot-label { font-size: 11px; color: var(--green-bright); margin-top: 5px; font-weight: 500; }
+  .slot-num { font-size: 22px; color: var(--green-bright); font-weight: 300; line-height: 1; }
+  .photo-slot svg { width: 20px; height: 20px; stroke: var(--green-bright); }
+  .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(26,46,26,0.75); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .photo-hint { font-size: 12px; color: #92400e; background: var(--amber-light); border-radius: var(--radius-sm); padding: 8px 12px; line-height: 1.5; }
+  .context-section { padding: 16px 20px 0; }
+  .context-field { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px; }
+  .context-field label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .context-field select, .context-field textarea { width: 100%; border: none; outline: none; font-family: inherit; font-size: 14px; color: var(--ink); background: transparent; padding: 0; appearance: none; -webkit-appearance: none; resize: none; }
+  .context-field textarea { min-height: 56px; line-height: 1.5; }
+  .context-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .context-grid .context-field { margin-bottom: 0; }
+  .cta-section { padding: 16px 20px 0; }
+  .analyse-btn { width: 100%; background: var(--green-deep); color: var(--green-pale); border: none; border-radius: var(--radius); padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
+  .analyse-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .analyse-btn:not(:disabled):active { transform: scale(0.98); }
+  .analyse-btn svg { width: 18px; height: 18px; }
+  .loading { display: none; padding: 32px 20px; text-align: center; }
+  .loading.visible { display: block; }
+  .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--green-pale); border-top-color: var(--green-bright); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--muted); }
+  .loading-sub { font-size: 12px; color: var(--green-light); margin-top: 4px; }
+  .error-box { display: none; background: var(--red-light); border: 1px solid rgba(192,57,43,0.2); border-radius: var(--radius); padding: 16px; margin: 16px 20px 0; font-size: 14px; color: var(--red); line-height: 1.5; }
+  .error-box.visible { display: block; }
+  .results { display: none; padding: 20px 20px 40px; }
+  .results.visible { display: block; }
+  .multiPlantWarning { background: var(--red-light); border: 1.5px solid rgba(192,57,43,0.3); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; font-size: 14px; color: var(--red); line-height: 1.6; }
+  .plant-hero { background: var(--green-deep); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; position: relative; overflow: hidden; }
+  .plant-hero::after { content: ''; position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(74,124,74,0.2); }
+  .plant-dutch { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--green-pale); line-height: 1.1; }
+  .plant-latin { font-size: 13px; color: var(--green-light); font-style: italic; margin-top: 3px; }
+  .confidence-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(127,184,127,0.2); color: var(--green-pale); border-radius: 20px; padding: 4px 10px; font-size: 12px; margin-top: 10px; }
+  .health-banner { border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; }
+  .health-banner.good { background: #edf7ed; border-left: 3px solid #4caf50; }
+  .health-banner.warning { background: var(--amber-light); border-left: 3px solid var(--amber); }
+  .health-banner.bad { background: var(--red-light); border-left: 3px solid var(--red); }
+  .health-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .health-status { font-size: 15px; font-weight: 500; }
+  .health-status.good { color: #2e7d32; }
+  .health-status.warning { color: #b45309; }
+  .health-status.bad { color: var(--red); }
+  .health-desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .card-icon.green { background: var(--green-mist); }
+  .card-icon.amber { background: var(--amber-light); }
+  .card-icon.blue { background: #e8f4fd; }
+  .card-icon svg { width: 16px; height: 16px; }
+  .card-icon.green svg { stroke: var(--green-bright); }
+  .card-icon.amber svg { stroke: var(--amber); }
+  .card-icon.blue svg { stroke: #2980b9; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; }
+  .card-body { font-size: 14px; color: var(--ink); line-height: 1.6; }
+  .card-body p { margin-bottom: 8px; }
+  .card-body p:last-child { margin-bottom: 0; }
+  .wildlife-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
+  .wildlife-card { background: var(--green-mist); border-radius: var(--radius-sm); padding: 10px; }
+  .wildlife-card.inactive { background: #f5f5f3; opacity: 0.5; }
+  .wildlife-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .wildlife-emoji { font-size: 16px; }
+  .wildlife-name { font-size: 12px; font-weight: 500; color: var(--green-mid); }
+  .wildlife-card.inactive .wildlife-name { color: var(--muted); }
+  .wildlife-species { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .month-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 4px; }
+  .month-pill { border-radius: 6px; padding: 4px 2px; text-align: center; font-size: 10px; font-weight: 500; }
+  .month-pill.prune { background: var(--green-pale); color: var(--green-mid); }
+  .month-pill.bloom { background: var(--amber-light); color: #92400e; }
+  .month-pill.neutral { background: #f0f0ee; color: var(--muted); }
+  .month-pill.current { outline: 2px solid var(--green-bright); }
+  .legend { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .cutting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cutting-yes { color: #2e7d32; font-weight: 500; font-size: 14px; }
+  .cutting-no { color: var(--muted); font-size: 14px; }
+  .section-divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .tips-list { list-style: none; }
+  .tips-list li { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--ink); line-height: 1.5; display: flex; gap: 8px; }
+  .tips-list li:last-child { border-bottom: none; }
+  .tip-bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--green-bright); flex-shrink: 0; margin-top: 7px; }
+  .location-advisory { border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 8px; font-size: 13px; line-height: 1.5; }
+  .location-advisory.ideal { background: #edf7ed; color: #2e7d32; }
+  .location-advisory.suboptimal { background: var(--amber-light); color: #92400e; }
+  .location-advisory.wrong { background: var(--red-light); color: var(--red); }
+  .new-scan-btn { width: 100%; background: transparent; color: var(--green-mid); border: 1.5px solid var(--green-bright); border-radius: var(--radius); padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+  .new-scan-btn:active { background: var(--green-mist); }
+  .setup-section { padding: 20px; background: white; margin: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
+  .setup-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--green-deep); margin-bottom: 6px; }
+  .setup-desc { font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+  .api-input { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; font-family: inherit; font-size: 14px; color: var(--ink); outline: none; margin-bottom: 10px; background: var(--cream); }
+  .api-input:focus { border-color: var(--green-bright); }
+  .api-save-btn { width: 100%; background: var(--green-deep); color: var(--green-pale); border: none; border-radius: var(--radius-sm); padding: 12px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .api-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+  .api-note a { color: var(--green-bright); }
+  .kandidaat-card { border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+  .kandidaat-card:last-child { margin-bottom: 0; }
+  .kandidaat-card.selected { border-color: var(--green-bright); background: var(--green-mist); }
+  .kandidaat-card:active { transform: scale(0.99); }
+  .kandidaat-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .kandidaat-naam { font-size: 15px; font-weight: 500; color: var(--ink); }
+  .kandidaat-lat { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 2px; }
+  .kandidaat-zekerheid { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; margin-top: 2px; }
+  .kandidaat-reden { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .geen-van-deze-btn { width: 100%; background: transparent; color: var(--muted); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 10px; font-family: inherit; font-size: 13px; cursor: pointer; margin-top: 4px; }
+  .geen-van-deze-btn:active { background: var(--cream); }
+  .bevestig-sectie { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+  .wiki-foto { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 12px; display: block; }
+  .wiki-foto-placeholder { width: 100%; height: 120px; background: var(--green-mist); border-radius: var(--radius-sm); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+  .bevestig-knoppen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .btn-ja { background: var(--green-deep); color: var(--green-pale); border: none; border-radius: var(--radius-sm); padding: 13px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-nee { background: transparent; color: var(--red); border: 1.5px solid rgba(192,57,43,0.3); border-radius: var(--radius-sm); padding: 13px; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-ja:active { opacity: 0.85; }
+  .btn-nee:active { background: var(--red-light); }
+  .alternatieven-sectie { display: none; }
+  .alternatieven-sectie.open { display: block; }
+
+  .tabs-bar { display:flex; gap:4px; margin-bottom:14px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:2px; }
+  .tabs-bar::-webkit-scrollbar { display:none; }
+  .tab-btn { flex:1; min-width:58px; padding:8px 4px; font-family:inherit; font-size:12px; font-weight:500; color:var(--muted); background:white; border:1.5px solid var(--border); border-radius:8px 8px 0 0; cursor:pointer; white-space:nowrap; transition:all 0.15s; border-bottom:none; position:relative; bottom:-1px; }
+  .tab-btn.active { color:white; background:var(--green-deep); border-color:var(--green-deep); z-index:1; }
+  .tabs-content { border:1.5px solid var(--border); border-radius:0 8px 8px 8px; padding:12px; margin-bottom:10px; background:white; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Green<span>Eye</span></div>
+  <div class="tagline">Herken & begrijp elke plant in je tuin</div>
+</div>
+
+<!-- API key is configured in the app code -->
+
+<div id="mainApp">
+  <div class="upload-section">
+    <div class="section-label">Foto's van de plant (max. 3)</div>
+    <div class="photos-grid" id="photosGrid">
+      <div class="photo-slot" id="slot0" onclick="triggerFileInput(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div class="slot-label">Overzicht</div>
+      </div>
+      <div class="photo-slot" id="slot1" onclick="triggerFileInput(1)" style="opacity:0.5;">
+        <div class="slot-num">+</div>
+        <div class="slot-label">Detail blad</div>
+      </div>
+      <div class="photo-slot" id="slot2" onclick="triggerFileInput(2)" style="opacity:0.5;">
+        <div class="slot-num">+</div>
+        <div class="slot-label">Stam / bloem</div>
+      </div>
+    </div>
+    <div class="photo-hint">Alle foto's moeten van dezelfde plant zijn — de AI controleert dit automatisch.</div>
+    <input type="file" id="fileInput0" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event,0)">
+    <input type="file" id="fileInput1" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event,1)">
+    <input type="file" id="fileInput2" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event,2)">
+  </div>
+
+  <div class="context-section">
+    <div class="section-label">Context</div>
+    <div class="context-grid">
+      <div class="context-field">
+        <label>Wanneer geplant?</label>
+        <select id="plantedWhen">
+          <option value="">Weet ik niet</option>
+          <option value="deze_week">Deze week</option>
+          <option value="vorige_week">Vorige week</option>
+          <option value="deze_maand">Deze maand</option>
+          <option value="dit_jaar">Dit jaar</option>
+          <option value="1_2_jaar">1–2 jaar geleden</option>
+          <option value="meer_dan_5">Meer dan 5 jaar</option>
+        </select>
+      </div>
+      <div class="context-field">
+        <label>Waar staat de plant?</label>
+        <select id="plantLocation">
+          <option value="">Weet ik niet</option>
+          <option value="tuin_grond">Tuin (volle grond)</option>
+          <option value="pot">Pot</option>
+          <option value="bak">Bak / kuip</option>
+          <option value="balkonbak">Balkonbak</option>
+          <option value="hangpot">Hangpot</option>
+          <option value="binnen">Binnen</option>
+          <option value="kas">Kas / serre</option>
+        </select>
+      </div>
+      <div class="context-field">
+        <label>Zichtbaar probleem?</label>
+        <select id="concern">
+          <option value="">Geen specifiek</option>
+          <option value="geel">Gele bladeren</option>
+          <option value="bruin">Bruine bladeren</option>
+          <option value="vlekken">Vlekken</option>
+          <option value="slap">Slappe plant</option>
+          <option value="insecten">Insecten zichtbaar</option>
+          <option value="geen_groei">Groeit niet</option>
+          <option value="wortels_uit_pot">Wortels uit pot</option>
+        </select>
+      </div>
+      <div class="context-field">
+        <label>Levensfase</label>
+        <select id="plantAge">
+          <option value="">Weet ik niet</option>
+          <option value="zaailing">Zaailing / kiemplant</option>
+          <option value="jong">Jonge plant (1-2 jaar)</option>
+          <option value="volwassen">Volwassen</option>
+          <option value="oud">Oude / grote plant</option>
+        </select>
+      </div>
+    </div>
+    <div class="context-field">
+      <label>Extra opmerkingen</label>
+      <textarea id="locationDesc" maxlength="200" placeholder="Bijv: net overgepot, verplaatst vanuit schaduw, zon 14–18u, naast schutting..." style="min-height:48px;"></textarea>
+      <div id="charCount" style="font-size:10px;color:var(--muted);text-align:right;margin-top:2px;">0 / 200</div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <button class="analyse-btn" id="analyseBtn" onclick="analyseImage()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      Analyseer plant
+    </button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+  <div class="loading" id="loadingSection">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Plant wordt geanalyseerd...</div>
+    <div class="loading-sub" id="loadingSubText">Foto's verwerken</div>
+  </div>
+  <div class="results" id="resultsSection"></div>
+</div>
+
+<script>
+const MONTHS_NL = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const CURRENT_MONTH = new Date().getMonth();
+let images = [null, null, null];
+
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'locationDesc') {
+    const count = e.target.value.length;
+    const el = document.getElementById('charCount');
+    if (el) { el.textContent = count + ' / 200'; el.style.color = count > 180 ? 'var(--amber)' : 'var(--muted)'; }
+  }
+});
+
+function getApiKey() {
+  return localStorage.getItem('greeneye_key') || '';
+}
+
+function init() {
+  if (!getApiKey()) {
+    document.getElementById('keyOverlay').style.display = 'flex';
+  }
+}
+
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (k.length < 20) { alert('Sleutel lijkt niet te kloppen, probeer opnieuw.'); return; }
+  localStorage.setItem('greeneye_key', k);
+  document.getElementById('keyOverlay').style.display = 'none';
+}
+
+
+function triggerFileInput(idx) { document.getElementById('fileInput' + idx).click(); }
+
+function resizeImage(dataUrl, maxSize, callback) {
+  const img = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    if (w > maxSize || h > maxSize) {
+      if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+      else { w = Math.round(w * maxSize / h); h = maxSize; }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.82).split(',')[1]);
+  };
+  img.src = dataUrl;
+}
+
+function handleImage(event, idx) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    resizeImage(dataUrl, 1024, (base64) => {
+      images[idx] = base64;
+      const slot = document.getElementById('slot' + idx);
+      slot.classList.add('filled');
+      slot.style.opacity = '1';
+      slot.innerHTML = `<img src="${dataUrl}" alt="Foto"><button class="remove-photo" onclick="event.stopPropagation();removePhoto(${idx})">✕</button>`;
+      slot.onclick = () => triggerFileInput(idx);
+      if (idx < 2) document.getElementById('slot' + (idx + 1)).style.opacity = '1';
+      updateBtn();
+    });
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function removePhoto(idx) {
+  images[idx] = null;
+  const slot = document.getElementById('slot' + idx);
+  slot.classList.remove('filled');
+  slot.style.opacity = idx === 0 ? '1' : '0.5';
+  const labels = ['Overzicht','Detail blad','Stam / bloem'];
+  slot.innerHTML = `${idx === 0 ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>' : '<div class="slot-num">+</div>'}<div class="slot-label">${labels[idx]}</div>`;
+  slot.onclick = () => triggerFileInput(idx);
+  updateBtn();
+}
+
+function updateBtn() { document.getElementById('analyseBtn').disabled = !images.some(i => i !== null); }
+
+function buildPrompt() {
+  const planted = document.getElementById('plantedWhen').value;
+  const concern = document.getElementById('concern').value;
+  const plantLoc = document.getElementById('plantLocation').value;
+  const loc = document.getElementById('locationDesc').value.trim();
+  const count = images.filter(i => i !== null).length;
+  const plantAge = document.getElementById('plantAge') ? document.getElementById('plantAge').value : '';
+  const plantedMap = { deze_week:'deze week geplant', vorige_week:'vorige week geplant', deze_maand:'deze maand geplant', dit_jaar:'dit jaar geplant', '1_2_jaar':'1–2 jaar geleden geplant', meer_dan_5:'al meer dan 5 jaar in de grond' };
+  const concernMap = { geel:'gele bladeren', bruin:'bruine bladeren', vlekken:'vlekken op bladeren', slap:'slappe plant', insecten:'insecten zichtbaar', geen_groei:'plant groeit niet', wortels_uit_pot:'wortels uit pot' };
+  const plantAgeMap = { zaailing:'zaailing/kiemplant', jong:'jonge plant van 1-2 jaar', volwassen:'volwassen plant', oud:'oude/grote plant' };
+  const plantLocMap = { tuin_grond:'tuin (volle grond)', pot:'pot', bak:'bak/kuip', balkonbak:'balkonbak', hangpot:'hangpot', binnen:'binnen', kas:'kas/serre' };
+  const ctx = [];
+  if (planted && plantedMap[planted]) ctx.push('Geplant: ' + plantedMap[planted]);
+  if (plantAge && plantAgeMap[plantAge]) ctx.push('Levensfase: ' + plantAgeMap[plantAge] + '. Houd hiermee rekening: een zaailing heeft andere kenmerken dan een volwassen exemplaar.');
+  if (concern && concernMap[concern]) ctx.push('Gesignaleerd probleem: ' + concernMap[concern]);
+  if (plantLoc && plantLocMap[plantLoc]) ctx.push('Standplaats: ' + plantLocMap[plantLoc]);
+  const isPot = ['pot','bak','balkonbak','hangpot'].includes(plantLoc);
+  if (isPot) ctx.push('Let specifiek op: is de pot/bak nog groot genoeg voor deze plant? Geef een expliciete aanbeveling.');
+  if (loc) ctx.push('Extra info: "' + loc + '"');
+  const month = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'][CURRENT_MONTH];
+  return `Je bent een expert tuinadviesapp voor Nederland. Analyseer ${count > 1 ? 'deze ' + count + ' foto\'s van dezelfde plant' : 'deze plantenafbeelding'}. Het is ${month}.${ctx.length ? '\n\nContext:\n' + ctx.join('\n') : ''}
+
+BELANGRIJK:
+- Als de foto's van VERSCHILLENDE plantensoorten zijn: "verschillende_planten": true
+- Als er geen plant zichtbaar is (auto, persoon, interieur etc.): "geen_plant": true met uitleg
+- Wees KRITISCH over fotokwaliteit. Als de foto te donker, wazig of te ver weg is voor betrouwbare identificatie, zeg dit eerlijk.
+
+Antwoord UITSLUITEND als geldig JSON, geen extra tekst of markdown:
+
+{
+  "geen_plant": false,
+  "geen_plant_uitleg": "",
+  "verschillende_planten": false,
+  "foto_kwaliteit": "goed|matig|slecht",
+  "foto_kwaliteit_uitleg": "Alleen invullen als matig of slecht: wat mist er aan de foto voor betere identificatie?",
+  "kandidaten": [
+    { "naam_nl": "Meest waarschijnlijke naam", "naam_lat": "Latijnse naam", "zekerheid": "hoog|gemiddeld|laag", "reden": "Waarom denk je dit (1 zin)" },
+    { "naam_nl": "Tweede mogelijkheid", "naam_lat": "Latijnse naam", "zekerheid": "gemiddeld|laag", "reden": "Waarom dit ook zou kunnen (1 zin)" },
+    { "naam_nl": "Derde mogelijkheid", "naam_lat": "Latijnse naam", "zekerheid": "laag", "reden": "Minder waarschijnlijk maar mogelijk (1 zin)" }
+  ],
+  "naam_nl": "Meest waarschijnlijke naam (zelfde als kandidaten[0])",
+  "naam_lat": "Latijnse naam",
+  "beschrijving": "Korte beschrijving 2-3 zinnen",
+  "herkenning_zekerheid": "hoog|gemiddeld|laag",
+  "gezondheid": {
+    "status": "goed|aandacht|slecht",
+    "titel": "Max 6 woorden",
+    "beschrijving": "2-3 zinnen op basis van foto"
+  },
+  "diagnose": "Diagnose en wat de gebruiker NU moet doen. Als pas geplant en nog geen bloei: benoem dat dit normaal is.",
+  "standplaats_advies": {
+    "beoordeling": "ideaal|suboptimaal|ongeschikt",
+    "uitleg": "Beoordeel de beschreven standplaats voor DEZE plant. Wat is ideaal, klopt het huidige?"
+  },
+  "snoeien": {
+    "moet_nu": false,
+    "nu_uitleg": "Als moet_nu true is: leg in gewone taal uit waarom nu snoeien nodig is op basis van de foto",
+    "hoe_snoeien": "Concrete stap-voor-stap uitleg voor beginners: waar precies snijden (boven een knop, op de stam, tot aan de grond), welk gereedschap gebruiken (snoeischaar, zaag, heggenschaar), hoe herken je wat weg moet (dood hout, kruisende takken, uitstekende takken), hoe ver ga je terug. Gebruik geen vakjargon.",
+    "beste_maanden": [1,2,3],
+    "bloei_maanden": [4,5,6]
+  },
+  "stekken": {
+    "mogelijk": true,
+    "slagingskans": "makkelijk|gemiddeld|moeilijk",
+    "benodigdheden": "Wat heb je nodig: potgrond, water, plastic zakje, hormoonpoeder etc.",
+    "stappen": ["Stap 1: beschrijf in gewone taal wat je doet", "Stap 2: ...", "Stap 3: ...", "Stap 4: ..."],
+    "beste_periode": "Beste moment en waarom"
+  },
+  "ecologie": {
+    "dieren": [
+      { "emoji": "🐝", "naam": "Bijen & hommels", "soorten": "Specifieke soorten bijv: hommel, honingbij, metselbij", "actief": true },
+      { "emoji": "🦋", "naam": "Vlinders", "soorten": "Specifieke soorten bijv: dagpauwoog, koolwitje", "actief": false },
+      { "emoji": "🐦", "naam": "Vogels", "soorten": "Specifieke soorten bijv: merel, roodborst, koolmees", "actief": false },
+      { "emoji": "🦔", "naam": "Egel", "soorten": "Waarom wel/niet aantrekkelijk voor egels", "actief": false },
+      { "emoji": "🦇", "naam": "Vleermuizen", "soorten": "Relevant bij nachtbloei of insectenattractiviteit", "actief": false },
+      { "emoji": "🐞", "naam": "Lieveheersbeestjes", "soorten": "Relevant bij luizen of natuurlijke plaagbestrijding", "actief": false }
+    ],
+    "toelichting": "Samenvatting ecologische waarde"
+  },
+  "plant_info": {
+    "hoogte_volwassen": "Hoogte als volwassen plant, bijv: 30-60 cm of 2-4 meter",
+    "giftig_mens": true,
+    "giftig_huisdier": true,
+    "giftig_toelichting": "Welk deel is giftig en wat zijn de gevolgen",
+    "invasief": false,
+    "invasief_toelichting": "Waarom wel/niet invasief in NL"
+  },
+  "pot_advies": "Alleen invullen als plant in pot/bak staat: is de huidige maat geschikt? Tekenen van te kleine pot? Wat adviseer je?",
+  "verzorging": {
+    "water": "Waterbehoefte en methode",
+    "grond": "Grondvereisten",
+    "zon": "Ideale lichtbehoefte",
+    "winterhard": true,
+    "extra_tips": ["tip 1", "tip 2", "tip 3"]
+  }
+}`;
+}
+
+async function analyseImage() {
+  const apiKey = getApiKey();
+  if (!apiKey) { document.getElementById('keyOverlay').style.display = 'flex'; return; }
+  const active = images.filter(i => i !== null);
+  if (!active.length) return;
+
+  _weetNietPoging = 0;
+  document.getElementById('analyseBtn').disabled = true;
+  document.getElementById('loadingSection').classList.add('visible');
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('visible');
+
+  const texts = ["Foto's verwerken...", 'Plant identificeren...', 'Gezondheid beoordelen...', 'Ecologie berekenen...', 'Snoeiadvies ophalen...'];
+  let li = 0;
+  const ticker = setInterval(() => { document.getElementById('loadingSubText').textContent = texts[++li % texts.length]; }, 1800);
+
+  try {
+    const content = [];
+    images.forEach((b64, i) => {
+      if (!b64) return;
+      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } });
+      if (active.length > 1) content.push({ type: 'text', text: `Foto ${content.filter(c=>c.type==='image').length} van ${active.length}.` });
+    });
+    content.push({ type: 'text', text: buildPrompt() });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content }] })
+    });
+
+    clearInterval(ticker);
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || 'API fout ' + res.status); }
+
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Onverwacht antwoord ontvangen. Probeer opnieuw.');
+    renderResults(JSON.parse(match[0]));
+
+  } catch (err) {
+    clearInterval(ticker);
+    document.getElementById('errorBox').textContent = 'Er ging iets mis: ' + err.message;
+    document.getElementById('errorBox').classList.add('visible');
+    document.getElementById('analyseBtn').disabled = false;
+  }
+  document.getElementById('loadingSection').classList.remove('visible');
+}
+
+let _lastResult = null;
+
+function renderResults(r) {
+  const sec = document.getElementById('resultsSection');
+  _lastResult = r;
+
+  if (r.geen_plant) {
+    sec.innerHTML = `
+      <div class="health-banner bad" style="margin:0 0 12px;">
+        <div class="health-icon">🔍</div>
+        <div>
+          <div class="health-status bad">Geen plant herkend</div>
+          <div class="health-desc">${r.geen_plant_uitleg || 'Op deze foto is geen plant zichtbaar. Maak een foto van een plant om te analyseren.'}</div>
+        </div>
+      </div>
+      <button class="new-scan-btn" onclick="resetScan()">Andere foto proberen</button>`;
+    sec.classList.add('visible');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  if (r.verschillende_planten) {
+    sec.innerHTML = `<div class="multiPlantWarning"><strong>Verschillende planten gedetecteerd</strong><br>De foto's lijken van verschillende planten te zijn. Upload foto's van dezelfde plant voor een goede analyse.</div><button class="new-scan-btn" onclick="resetScan()">Opnieuw proberen</button>`;
+    sec.classList.add('visible');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  // Show foto quality warning if needed — stored for after rendering
+  const fotoWaarschuwing = (r.foto_kwaliteit === 'matig' || r.foto_kwaliteit === 'slecht') && r.foto_kwaliteit_uitleg
+    ? `<div class="health-banner warning" style="margin-bottom:12px;">
+        <div class="health-icon">📷</div>
+        <div>
+          <div class="health-status warning">Fotokwaliteit: ${r.foto_kwaliteit}</div>
+          <div class="health-desc">${r.foto_kwaliteit_uitleg} — de analyse is mogelijk minder nauwkeurig.</div>
+        </div>
+       </div>` : '';
+
+  const kandidaten = r.kandidaten || [{ naam_nl: r.naam_nl, naam_lat: r.naam_lat, zekerheid: r.herkenning_zekerheid, reden: '' }];
+  const top = kandidaten[0];
+  const zekerheidsKleur = { hoog: '#2e7d32', gemiddeld: '#b45309', laag: '#c0392b' };
+  const isOnzeker = top.zekerheid === 'laag' || r.herkenning_zekerheid === 'laag';
+
+  // Build alternatief cards (kandidaten 2 en 3)
+  const altCards = kandidaten.slice(1).map((k, i) => `
+    <div class="kandidaat-card" onclick="kiesAlternatief(${i+1})" id="altCard${i+1}">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div id="altThumb${i+1}" style="width:56px;height:56px;border-radius:8px;background:var(--green-mist);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;">🌿</div>
+        <div style="flex:1;min-width:0;">
+          <div class="kandidaat-naam">${k.naam_nl}</div>
+          <div class="kandidaat-lat">${k.naam_lat}</div>
+          ${k.reden ? `<div class="kandidaat-reden" style="margin-top:4px;">${k.reden}</div>` : ''}
+        </div>
+        <div class="kandidaat-zekerheid" style="color:${zekerheidsKleur[k.zekerheid]||'#888'};margin-top:2px;">${k.zekerheid||''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  sec.innerHTML = `
+    ${fotoWaarschuwing}
+
+    <div class="bevestig-sectie" id="bevestigSectie">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px;">${isOnzeker ? 'Welke lijkt het meest op jouw plant?' : 'Is dit jouw plant?'}</div>
+        <span id="zekerheidsBadge"></span>
+      </div>
+
+      ${isOnzeker ? `
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">De AI twijfelt. Vergelijk de bladfoto's hieronder met wat jij ziet en kies de beste match.</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+        ${kandidaten.map((k,i) => `
+          <div onclick="kiesKandidaatDirect(${i})" style="cursor:pointer;border-radius:10px;border:2px solid var(--border);overflow:hidden;transition:all 0.15s;" id="vergelijkKaart${i}">
+            <div id="vergelijkFoto${i}" style="height:90px;background:var(--green-mist);display:flex;align-items:center;justify-content:center;font-size:24px;">🌿</div>
+            <div style="padding:6px 8px;">
+              <div style="font-size:12px;font-weight:500;color:var(--ink);line-height:1.3;">${k.naam_nl}</div>
+              <div style="font-size:10px;color:var(--muted);font-style:italic;">${k.naam_lat}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;"><button onclick="ikWeetHetZelfTop()" style="background:var(--green-deep);color:var(--green-pale);border:none;border-radius:var(--radius-sm);padding:11px 8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">Ik weet het zelf</button><button onclick="laterNogEens()" style="background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 8px;font-family:inherit;font-size:13px;cursor:pointer;">Later nog eens</button></div>
+      <div id="eigenNaamSectionTop" style="display:none;margin-bottom:10px;">
+        <div class="context-field">
+          <label>Naam van de plant</label>
+          <input type="text" id="eigenNaamInputTop" placeholder="Bijv: Zomereik, Vlier..." style="width:100%;border:none;outline:none;font-family:inherit;font-size:14px;background:transparent;">
+        </div>
+        <button class="analyse-btn" style="margin-top:8px;" onclick="bevestigEigenNaamTop()">Analyseer met deze naam</button>
+      </div>
+      <div id="onzekerTip" style="background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#92400e;line-height:1.5;margin-bottom:10px;">
+        Niet zeker? Wacht tot de plant meer kenmerken heeft zoals bloemen, vruchten of een duidelijkere bladvorm voor een betrouwbaardere herkenning.
+      </div>
+      ` : `
+      <div id="topWikiFoto" class="wiki-foto-placeholder">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green-bright)" stroke-width="1.5"><path d="M12 22V12M12 12C12 7 7 3 2 3c0 5 4 9 10 9zM12 12c0-5 5-9 10-9-1 5-5 9-10 9"/></svg>
+      </div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--green-deep);line-height:1.1;">${top.naam_nl}</div>
+      <div style="font-size:13px;color:var(--muted);font-style:italic;margin-top:3px;margin-bottom:8px;">${top.naam_lat}</div>
+      ${top.reden ? `<div style="font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;">${top.reden}</div>` : ''}
+      <div id="onzekerTip"></div>
+      <div class="bevestig-knoppen">
+        <button class="btn-ja" onclick="bevestigJa()">✓ Ja</button>
+        <button class="btn-nee" onclick="bevestigNee()">✕ Nee</button>
+      </div>
+      <button onclick="bevestigWeetNiet()" style="width:100%;margin-top:8px;background:transparent;color:var(--muted);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:11px;font-family:inherit;font-size:13px;cursor:pointer;">Weet ik niet zeker</button>
+      `}
+    </div>
+
+    <div class="alternatieven-sectie" id="alternatievenSectie">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">Andere mogelijkheden:</div>
+      ${altCards}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+        <button onclick="ikWeetHetZelf()" style="background:var(--green-deep);color:var(--green-pale);border:none;border-radius:var(--radius-sm);padding:12px 8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">Ik weet het zelf</button>
+        <button onclick="laterNogEens()" style="background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 8px;font-family:inherit;font-size:13px;cursor:pointer;">Later nog eens</button>
+      </div>
+      <div id="eigenNaamSection" style="display:none;margin-top:10px;">
+        <div class="context-field">
+          <label>Naam van de plant</label>
+          <input type="text" id="eigenNaamInput" placeholder="Bijv: Aardbeienplant, Lavendel..." style="width:100%;border:none;outline:none;font-family:inherit;font-size:14px;background:transparent;">
+        </div>
+        <button class="analyse-btn" style="margin-top:10px;" onclick="bevestigEigenNaam()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+          Analyseer met deze naam
+        </button>
+      </div>
+    </div>
+
+    <div id="analyseResultaten" style="display:none;"></div>
+    <button class="new-scan-btn" onclick="resetScan()" style="margin-top:8px;display:none;" id="nieuweScanBtn">Nieuwe plant scannen</button>
+  `;
+
+  _lastResult = r;
+  _geselecteerdeKandidaat = 0;
+
+  // Set zekerheid badge
+  const badge = document.getElementById('zekerheidsBadge');
+  if (badge) {
+    if (top.zekerheid === 'hoog') {
+      badge.innerHTML = '<span style="background:#edf7ed;color:#2e7d32;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Zeer zeker</span>';
+    } else if (top.zekerheid === 'gemiddeld') {
+      badge.innerHTML = '<span style="background:var(--amber-light);color:#92400e;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Redelijk zeker</span>';
+    } else {
+      badge.innerHTML = '<span style="background:var(--red-light);color:var(--red);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:500;">Onzeker</span>';
+      const tip = document.getElementById('onzekerTip');
+      if (tip) tip.innerHTML = '<div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;font-size:13px;color:#92400e;line-height:1.5;">Herkenning is onzeker. Voeg een close-up van een blad én bloem toe voor een betere analyse.</div>';
+    }
+  }
+
+  if (isOnzeker) {
+    // Load comparison photos for all 3 candidates
+    kandidaten.forEach((k, i) => {
+      if (k.naam_lat) fetchWikiImageCompare(k.naam_lat, i);
+    });
+  } else {
+    // Load Wikipedia photo for top candidate
+    fetchWikiImageLarge(top.naam_lat, 'topWikiFoto');
+    // Load small thumbs for alternatives
+    kandidaten.slice(1).forEach((k, i) => {
+      if (k.naam_lat) fetchWikiImage(k.naam_lat, 'alt', i+1);
+    });
+  }
+
+  sec.classList.add('visible');
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+let _geselecteerdeKandidaat = 0;
+
+async function fetchWikiImageCompare(latinName, idx) {
+  if (!latinName) return;
+  try {
+    const search = encodeURIComponent(latinName.split(' ').slice(0,2).join(' '));
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${search}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const imgUrl = data.thumbnail?.source;
+    const el = document.getElementById('vergelijkFoto' + idx);
+    if (imgUrl && el) el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" alt="" onerror="this.parentElement.textContent='🌿'">`;
+  } catch(e) {}
+}
+
+async function fetchWikiImageLarge(latinName, targetId) {
+  if (!latinName) return;
+  try {
+    const search = encodeURIComponent(latinName.split(' ').slice(0,2).join(' '));
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${search}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const imgUrl = data.originalimage?.source || data.thumbnail?.source;
+    const el = document.getElementById(targetId);
+    if (imgUrl && el) {
+      el.innerHTML = `<img src="${imgUrl}" class="wiki-foto" alt="${latinName}" onerror="this.parentElement.innerHTML='<div style=\'text-align:center;padding:20px;color:var(--muted);font-size:13px;\'>Geen foto beschikbaar</div>'">`;
+      el.className = '';
+    }
+  } catch(e) {}
+}
+
+async function fetchWikiImage(latinName, prefix, idx) {
+  if (!latinName) return;
+  try {
+    const search = encodeURIComponent(latinName.split(' ').slice(0,2).join(' '));
+    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${search}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const imgUrl = data.thumbnail?.source;
+    const el = document.getElementById(prefix + 'Thumb' + idx);
+    if (imgUrl && el) el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;" alt="" onerror="this.parentElement.textContent='🌿'">`;
+  } catch(e) {}
+}
+
+function kiesKandidaatDirect(idx) {
+  // Highlight selected card
+  document.querySelectorAll('[id^="vergelijkKaart"]').forEach((el, i) => {
+    el.style.borderColor = i === idx ? 'var(--green-bright)' : 'var(--border)';
+    el.style.background = i === idx ? 'var(--green-mist)' : '';
+  });
+  const r = _lastResult;
+  const kandidaten = r.kandidaten || [];
+  const k = kandidaten[idx];
+  if (!k) return;
+  r.naam_nl = k.naam_nl;
+  r.naam_lat = k.naam_lat;
+  _lastResult = r;
+  document.getElementById('bevestigSectie').style.display = 'none';
+  document.getElementById('analyseResultaten').style.display = 'block';
+  document.getElementById('nieuweScanBtn').style.display = 'block';
+  renderFullAnalysis(r);
+}
+
+function bevestigEigenNaamTop() {
+  const naam = document.getElementById('eigenNaamInputTop').value.trim();
+  if (!naam) { alert('Vul eerst de naam in.'); return; }
+  document.getElementById('bevestigSectie').style.display = 'none';
+  const res = document.getElementById('analyseResultaten');
+  res.style.display = 'block';
+  res.innerHTML = '<div style="text-align:center;padding:24px 0;"><div class="loading-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--muted);">Analyse voor <strong>' + naam + '</strong>...</div></div>';
+  document.getElementById('nieuweScanBtn').style.display = 'block';
+  heranalyseer(naam);
+}
+
+function geenVanDezeTop() {
+  const sec = document.getElementById('eigenNaamSectionTop');
+  if (sec) { sec.style.display = 'block'; document.getElementById('eigenNaamInputTop').focus(); }
+}
+
+let _weetNietPoging = 0;
+
+function bevestigWeetNiet() {
+  _weetNietPoging++;
+  if (_weetNietPoging > 1) {
+    // Second time — give up gracefully
+    document.getElementById('bevestigSectie').style.display = 'none';
+    const res = document.getElementById('analyseResultaten');
+    res.style.display = 'block';
+    res.innerHTML = `
+      <div class="health-banner warning">
+        <div class="health-icon">🤷</div>
+        <div>
+          <div class="health-status warning">Kan de plant niet identificeren</div>
+          <div class="health-desc">Ook met de extra informatie lukt het niet om deze plant betrouwbaar te herkennen. Probeer betere foto's te maken of vraag het een tuincentrum.</div>
+        </div>
+      </div>`;
+    document.getElementById('nieuweScanBtn').style.display = 'block';
+    return;
+  }
+  // First time — ask for more info
+  document.getElementById('bevestigSectie').innerHTML += `
+    <div id="weetNietSectie" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;color:var(--ink);font-weight:500;margin-bottom:8px;">Geef extra info om het opnieuw te proberen:</div>
+      <div class="context-field" style="margin-bottom:8px;">
+        <label>Wat zie je nog meer?</label>
+        <textarea id="extraInfoInput" maxlength="300" placeholder="Bijv: lijkt op onkruid, wortels boven de grond, groeit snel, ruikt sterk, heeft doorns, gevonden in schaduw..." style="min-height:64px;width:100%;border:none;outline:none;font-family:inherit;font-size:14px;background:transparent;resize:none;line-height:1.5;"></textarea>
+      </div>
+      <button class="analyse-btn" onclick="heranalyseMetExtraInfo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Opnieuw analyseren
+      </button>
+    </div>`;
+}
+
+async function heranalyseMetExtraInfo() {
+  const extra = document.getElementById('extraInfoInput').value.trim();
+  if (!extra) { alert('Vul eerst wat extra info in.'); return; }
+  document.getElementById('weetNietSectie').innerHTML = '<div style="text-align:center;padding:16px 0;"><div class="loading-spinner" style="margin:0 auto 10px;"></div><div style="font-size:13px;color:var(--muted);">Opnieuw analyseren met extra info...</div></div>';
+
+  const apiKey = getApiKey();
+  const active = images.filter(i => i !== null);
+  const month = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'][CURRENT_MONTH];
+  const eersteKandidaten = (_lastResult.kandidaten || []).map(k => k.naam_nl).join(', ');
+
+  const prompt = `Je bent een expert tuinadviesapp voor Nederland. Het is ${month}.
+
+De eerdere analyse gaf deze kandidaten: ${eersteKandidaten}. De gebruiker twijfelt aan alle suggesties.
+
+Extra info van de gebruiker: "${extra}"
+
+Probeer de plant opnieuw te identificeren met deze extra informatie. Als je nog steeds niet zeker bent, zet dan "herkenning_zekerheid": "laag" en wees eerlijk.
+
+Antwoord UITSLUITEND als geldig JSON:
+
+{
+  "geen_plant": false,
+  "geen_plant_uitleg": "",
+  "verschillende_planten": false,
+  "foto_kwaliteit": "goed",
+  "foto_kwaliteit_uitleg": "",
+  "kandidaten": [
+    { "naam_nl": "Beste gok", "naam_lat": "Latijnse naam", "zekerheid": "gemiddeld", "reden": "Waarom, rekening houdend met extra info" },
+    { "naam_nl": "Tweede optie", "naam_lat": "Latijnse naam", "zekerheid": "laag", "reden": "Reden" },
+    { "naam_nl": "Derde optie", "naam_lat": "Latijnse naam", "zekerheid": "laag", "reden": "Reden" }
+  ],
+  "naam_nl": "Beste gok naam",
+  "naam_lat": "Latijnse naam",
+  "beschrijving": "Beschrijving",
+  "herkenning_zekerheid": "gemiddeld|laag",
+  "gezondheid": { "status": "goed", "titel": "Lijkt gezond", "beschrijving": "Op basis van de foto" },
+  "diagnose": "Diagnose",
+  "standplaats_advies": { "beoordeling": "ideaal", "uitleg": "" },
+  "snoeien": { "moet_nu": false, "nu_uitleg": "", "hoe_snoeien": "Snoeiadvies", "beste_maanden": [], "bloei_maanden": [] },
+  "stekken": { "mogelijk": false, "slagingskans": "gemiddeld", "benodigdheden": "", "stappen": [], "beste_periode": "" },
+  "ecologie": { "dieren": [
+    { "emoji": "🐝", "naam": "Bijen & hommels", "soorten": "", "actief": false },
+    { "emoji": "🦋", "naam": "Vlinders", "soorten": "", "actief": false },
+    { "emoji": "🐦", "naam": "Vogels", "soorten": "", "actief": false },
+    { "emoji": "🦔", "naam": "Egel", "soorten": "", "actief": false },
+    { "emoji": "🦇", "naam": "Vleermuizen", "soorten": "", "actief": false },
+    { "emoji": "🐞", "naam": "Lieveheersbeestjes", "soorten": "", "actief": false }
+  ], "toelichting": "" },
+  "plant_info": { "hoogte_volwassen": "", "giftig_mens": false, "giftig_huisdier": false, "giftig_toelichting": "", "invasief": false, "invasief_toelichting": "" },
+  "pot_advies": "",
+  "verzorging": { "water": "", "grond": "", "zon": "", "winterhard": true, "extra_tips": [] }
+}`;
+
+  try {
+    const content = [];
+    images.forEach(b64 => { if (b64) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } }); });
+    content.push({ type: 'text', text: prompt });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content }] })
+    });
+
+    if (!res.ok) throw new Error('API fout ' + res.status);
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Onverwacht antwoord');
+    renderResults(JSON.parse(match[0]));
+
+  } catch(err) {
+    document.getElementById('weetNietSectie').innerHTML = `<div class="error-box visible">Er ging iets mis: ${err.message}</div>`;
+  }
+}
+
+function bevestigJa() {
+  document.getElementById('bevestigSectie').style.display = 'none';
+  document.getElementById('analyseResultaten').style.display = 'block';
+  document.getElementById('nieuweScanBtn').style.display = 'block';
+  renderFullAnalysis(_lastResult);
+}
+
+function bevestigNee() {
+  document.getElementById('bevestigSectie').style.display = 'none';
+  const alt = document.getElementById('alternatievenSectie');
+  alt.classList.add('open');
+  alt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function kiesAlternatief(idx) {
+  const kandidaten = _lastResult.kandidaten || [];
+  const k = kandidaten[idx];
+  if (!k) return;
+  // Highlight selection
+  document.querySelectorAll('#alternatievenSectie .kandidaat-card').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx - 1);
+  });
+  _geselecteerdeKandidaat = idx;
+  // Update or create confirm button
+  let btn = document.getElementById('altBevestigBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'altBevestigBtn';
+    btn.className = 'analyse-btn';
+    btn.style.marginTop = '10px';
+    document.getElementById('alternatievenSectie').appendChild(btn);
+  }
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg> Analyseer als ' + k.naam_nl;
+  btn.onclick = () => {
+    const r = _lastResult;
+    r.naam_nl = k.naam_nl;
+    r.naam_lat = k.naam_lat;
+    document.getElementById('alternatievenSectie').classList.remove('open');
+    document.getElementById('analyseResultaten').style.display = 'block';
+    document.getElementById('nieuweScanBtn').style.display = 'block';
+    renderFullAnalysis(r);
+  };
+}
+
+function selectKandidaat(idx) {
+  _geselecteerdeKandidaat = idx;
+  document.querySelectorAll('.kandidaat-card').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  const isGeenVanDeze = idx === -1;
+  document.getElementById('eigenNaamSection').style.display = isGeenVanDeze ? 'block' : 'none';
+}
+
+function ikWeetHetZelf() {
+  const sec = document.getElementById('eigenNaamSection');
+  if (sec) { sec.style.display = 'block'; document.getElementById('eigenNaamInput').focus(); }
+}
+
+function ikWeetHetZelfTop() {
+  const sec = document.getElementById('eigenNaamSectionTop');
+  if (sec) { sec.style.display = 'block'; document.getElementById('eigenNaamInputTop').focus(); }
+}
+
+function laterNogEens() {
+  resetScan();
+}
+
+function geenVanDeze() {
+  ikWeetHetZelf();
+}
+
+async function bevestigKeuze() {
+  const r = _lastResult;
+
+  if (_geselecteerdeKandidaat === -1) {
+    // User entered their own name — re-analyse with that name as fact
+    const gekozenNaam = document.getElementById('eigenNaamInput').value.trim();
+    if (!gekozenNaam) { alert('Vul eerst de naam van de plant in.'); return; }
+    document.getElementById('kandidatenCard').style.display = 'none';
+    await heranalyseer(gekozenNaam);
+  } else {
+    // User picked one of the AI candidates — use existing analysis
+    const kandidaten = r.kandidaten || [{ naam_nl: r.naam_nl, naam_lat: r.naam_lat }];
+    const k = kandidaten[_geselecteerdeKandidaat] || kandidaten[0];
+    r.naam_nl = k.naam_nl;
+    r.naam_lat = k.naam_lat;
+    document.getElementById('kandidatenCard').style.display = 'none';
+    renderFullAnalysis(r);
+  }
+}
+
+function bevestigEigenNaam() {
+  const naam = document.getElementById('eigenNaamInput') && document.getElementById('eigenNaamInput').value.trim();
+  if (!naam) { alert('Vul eerst de naam van de plant in.'); return; }
+  document.getElementById('eigenNaamSection').style.display = 'none';
+  const res = document.getElementById('analyseResultaten');
+  res.style.display = 'block';
+  res.innerHTML = '<div style="text-align:center;padding:24px 0;"><div class="loading-spinner" style="margin:0 auto 12px;"></div><div style="font-size:14px;color:var(--muted);">Analyse voor <strong>' + naam + '</strong>...</div></div>';
+  document.getElementById('nieuweScanBtn').style.display = 'block';
+  heranalyseer(naam);
+}
+
+async function heranalyseer(plantNaam) {
+  const apiKey = getApiKey();
+  const active = images.filter(i => i !== null);
+  const sec = document.getElementById('resultsSection');
+
+  // Show loading inside results
+  document.getElementById('analyseResultaten').style.display = 'block';
+  document.getElementById('analyseResultaten').innerHTML = `
+    <div style="text-align:center;padding:24px 0;">
+      <div class="loading-spinner" style="margin:0 auto 12px;"></div>
+      <div style="font-size:14px;color:var(--muted);">Analyse opnieuw uitvoeren voor <strong>${plantNaam}</strong>...</div>
+    </div>`;
+
+  const planted = document.getElementById('plantedWhen').value;
+  const concern = document.getElementById('concern').value;
+  const plantLoc = document.getElementById('plantLocation').value;
+  const loc = document.getElementById('locationDesc').value.trim();
+  const month = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'][CURRENT_MONTH];
+
+  const ctx = [`De gebruiker heeft bevestigd dat dit een ${plantNaam} is. Baseer de VOLLEDIGE analyse op deze plant, ook al lijkt de foto op iets anders.`];
+  const plantAge = document.getElementById('plantAge') ? document.getElementById('plantAge').value : '';
+  const plantedMap = { deze_week:'deze week geplant', vorige_week:'vorige week geplant', deze_maand:'deze maand geplant', dit_jaar:'dit jaar geplant', '1_2_jaar':'1–2 jaar geleden geplant', meer_dan_5:'al meer dan 5 jaar in de grond' };
+  const concernMap = { geel:'gele bladeren', bruin:'bruine bladeren', vlekken:'vlekken op bladeren', slap:'slappe plant', insecten:'insecten zichtbaar', geen_groei:'plant groeit niet', wortels_uit_pot:'wortels uit pot' };
+  const plantAgeMap = { zaailing:'zaailing/kiemplant (heeft nog niet alle volwassen kenmerken)', jong:'jonge plant van 1-2 jaar', volwassen:'volwassen plant', oud:'oude/grote plant' };
+  const plantLocMap = { tuin_grond:'tuin (volle grond)', pot:'pot', bak:'bak/kuip', balkonbak:'balkonbak', hangpot:'hangpot', binnen:'binnen', kas:'kas/serre' };
+  if (planted && plantedMap[planted]) ctx.push('Geplant: ' + plantedMap[planted]);
+  if (concern && concernMap[concern]) ctx.push('Gesignaleerd probleem: ' + concernMap[concern]);
+  if (plantAge && plantAgeMap[plantAge]) ctx.push('Levensfase: ' + plantAgeMap[plantAge] + '. Houd hiermee rekening bij de herkenning: een zaailing of jonge plant heeft andere kenmerken dan een volwassen exemplaar.');
+  if (plantLoc && plantLocMap[plantLoc]) ctx.push('Standplaats: ' + plantLocMap[plantLoc]);
+  if (['pot','bak','balkonbak','hangpot'].includes(plantLoc)) ctx.push('Let op: beoordeel of de pot/bak nog groot genoeg is.');
+  if (loc) ctx.push('Extra info: "' + loc + '"');
+
+  const prompt = `Je bent een expert tuinadviesapp voor Nederland. Het is ${month}.
+
+${ctx.join('\n')}
+
+Geef een volledige analyse voor de ${plantNaam}. Gebruik de foto alleen voor gezondheidsbeoordeling en diagnose.
+
+Antwoord UITSLUITEND als geldig JSON, geen extra tekst of markdown:
+
+{
+  "verschillende_planten": false,
+  "kandidaten": [{"naam_nl": "${plantNaam}", "naam_lat": "Latijnse naam", "zekerheid": "hoog", "reden": "Bevestigd door gebruiker"}],
+  "naam_nl": "${plantNaam}",
+  "naam_lat": "Latijnse naam van ${plantNaam}",
+  "beschrijving": "Beschrijving van ${plantNaam} (2-3 zinnen)",
+  "herkenning_zekerheid": "hoog",
+  "gezondheid": {
+    "status": "goed|aandacht|slecht",
+    "titel": "Max 6 woorden",
+    "beschrijving": "Gezondheidsbeoordeling op basis van de foto"
+  },
+  "diagnose": "Diagnose en wat de gebruiker NU moet doen voor ${plantNaam}.",
+  "standplaats_advies": {
+    "beoordeling": "ideaal|suboptimaal|ongeschikt",
+    "uitleg": "Standplaatsadvies specifiek voor ${plantNaam}"
+  },
+  "snoeien": {
+    "moet_nu": false,
+    "nu_uitleg": "Als moet_nu true is: waarom nu snoeien",
+    "hoe_snoeien": "Concrete stap-voor-stap uitleg voor beginners: waar precies snijden, welk gereedschap, hoe herken je wat weg moet, hoe ver ga je terug. Geen vakjargon.",
+    "beste_maanden": [1,2,3],
+    "bloei_maanden": [4,5,6]
+  },
+  "stekken": {
+    "mogelijk": true,
+    "slagingskans": "makkelijk|gemiddeld|moeilijk",
+    "benodigdheden": "Wat heb je nodig",
+    "stappen": ["Stap 1: ...", "Stap 2: ...", "Stap 3: ...", "Stap 4: ..."],
+    "beste_periode": "Beste moment en waarom"
+  },
+  "ecologie": {
+    "dieren": [
+      { "emoji": "🐝", "naam": "Bijen & hommels", "soorten": "Specifieke soorten voor ${plantNaam}", "actief": true },
+      { "emoji": "🦋", "naam": "Vlinders", "soorten": "Specifieke soorten", "actief": false },
+      { "emoji": "🐦", "naam": "Vogels", "soorten": "Specifieke soorten", "actief": false },
+      { "emoji": "🦔", "naam": "Egel", "soorten": "Relevantie voor egels", "actief": false },
+      { "emoji": "🦇", "naam": "Vleermuizen", "soorten": "Relevantie voor vleermuizen", "actief": false },
+      { "emoji": "🐞", "naam": "Lieveheersbeestjes", "soorten": "Relevantie", "actief": false }
+    ],
+    "toelichting": "Ecologische waarde van ${plantNaam}"
+  },
+  "verzorging": {
+    "water": "Waterbehoefte ${plantNaam}",
+    "grond": "Grondvereisten",
+    "zon": "Lichtbehoefte",
+    "winterhard": true,
+    "extra_tips": ["tip 1", "tip 2", "tip 3"]
+  }
+}`;
+
+  try {
+    const content = [];
+    images.forEach(b64 => { if (b64) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } }); });
+    content.push({ type: 'text', text: prompt });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content }] })
+    });
+
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message || 'API fout ' + res.status); }
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Onverwacht antwoord. Probeer opnieuw.');
+    const newR = JSON.parse(match[0]);
+    document.getElementById('analyseResultaten').style.display = 'block';
+    document.getElementById('nieuweScanBtn').style.display = 'block';
+    renderFullAnalysis(newR);
+
+  } catch(err) {
+    document.getElementById('analyseResultaten').innerHTML = `<div class="error-box visible">Er ging iets mis: ${err.message}</div>`;
+  }
+}
+
+function renderFullAnalysis(r) {
+  const hc = r.gezondheid?.status === 'goed' ? 'good' : r.gezondheid?.status === 'aandacht' ? 'warning' : 'bad';
+  const hi = r.gezondheid?.status === 'goed' ? '🌿' : r.gezondheid?.status === 'aandacht' ? '⚠️' : '🚨';
+  const pm = r.snoeien?.beste_maanden || [];
+  const bm = r.snoeien?.bloei_maanden || [];
+  const pills = MONTHS_NL.map((m,i) => {
+    const cls = ['month-pill', pm.includes(i+1)?'prune':bm.includes(i+1)?'bloom':'neutral', i===CURRENT_MONTH?'current':''].filter(Boolean).join(' ');
+    return `<div class="${cls}">${m}</div>`;
+  }).join('');
+
+  const tips = (r.verzorging?.extra_tips||[]).map(t=>`<li><span class="tip-bullet"></span>${t}</li>`).join('');
+  const wildlife = (r.ecologie?.dieren||[]).map(d=>`
+    <div class="wildlife-card ${d.actief?'':'inactive'}">
+      <div class="wildlife-header"><span class="wildlife-emoji">${d.emoji}</span><span class="wildlife-name">${d.naam}</span></div>
+      <div class="wildlife-species">${d.soorten}</div>
+    </div>`).join('');
+
+  const locClass = {ideaal:'ideal',suboptimaal:'suboptimal',ongeschikt:'wrong'}[r.standplaats_advies?.beoordeling] || 'suboptimal';
+  const locIcon = {ideaal:'✓',suboptimaal:'⚠',ongeschikt:'✕'}[r.standplaats_advies?.beoordeling] || '⚠';
+  const locHtml = r.standplaats_advies?.uitleg ? `<div class="section-divider"></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Jouw standplaats</div><div class="location-advisory ${locClass}">${locIcon} ${r.standplaats_advies.uitleg}</div>` : '';
+
+  document.getElementById('analyseResultaten').style.display = 'block';
+  document.getElementById('analyseResultaten').innerHTML = `
+    ${typeof fotoWaarschuwing !== 'undefined' ? fotoWaarschuwing : ''}
+    <div class="plant-hero">
+      <div class="plant-dutch">${r.naam_nl||'Onbekende plant'}</div>
+      <div class="plant-latin">${r.naam_lat||''}</div>
+      <div class="confidence-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Zekerheid: ${r.herkenning_zekerheid||'gemiddeld'}
+      </div>
+      <div style="font-size:13px;color:rgba(200,230,200,0.75);margin-top:12px;line-height:1.6;">${r.beschrijving||''}</div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        ${r.plant_info?.hoogte_volwassen ? `<span style="background:rgba(127,184,127,0.2);color:var(--green-pale);border-radius:20px;padding:3px 10px;font-size:12px;">↕ ${r.plant_info.hoogte_volwassen}</span>` : ''}
+        ${r.plant_info?.giftig_mens ? `<span style="background:rgba(192,57,43,0.3);color:#ffc8c8;border-radius:20px;padding:3px 10px;font-size:12px;">⚠ Giftig voor mensen</span>` : ''}
+        ${r.plant_info?.giftig_huisdier ? `<span style="background:rgba(192,57,43,0.25);color:#ffc8c8;border-radius:20px;padding:3px 10px;font-size:12px;">⚠ Giftig voor huisdieren</span>` : ''}
+        ${r.plant_info?.invasief ? `<span style="background:rgba(200,130,10,0.3);color:#ffe8b0;border-radius:20px;padding:3px 10px;font-size:12px;">⚠ Invasief</span>` : ''}
+      </div>
+    </div>
+
+    ${r.plant_info?.giftig_toelichting && (r.plant_info?.giftig_mens || r.plant_info?.giftig_huisdier) ? `
+    <div class="health-banner bad">
+      <div class="health-icon">☠️</div>
+      <div><div class="health-status bad">Giftig</div><div class="health-desc">${r.plant_info.giftig_toelichting}</div></div>
+    </div>` : ''}
+
+    ${r.pot_advies ? `
+    <div class="health-banner warning">
+      <div class="health-icon">🪴</div>
+      <div><div class="health-status warning">Pot / bak advies</div><div class="health-desc">${r.pot_advies}</div></div>
+    </div>` : ''}
+
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('overzicht',this)">Overzicht</button>
+      <button class="tab-btn" onclick="switchTab('verzorging',this)">Verzorging</button>
+      <button class="tab-btn" onclick="switchTab('snoeien',this)">Snoeien</button>
+      <button class="tab-btn" onclick="switchTab('stekken',this)">Stekken</button>
+      <button class="tab-btn" onclick="switchTab('natuur',this)">Natuur</button>
+    </div>
+    <div class="tabs-content">
+    <div id="tab-overzicht" class="tab-pane active">
+      <div class="health-banner ${hc}">
+        <div class="health-icon">${hi}</div>
+        <div>
+          <div class="health-status ${hc}">${r.gezondheid?.titel||''}</div>
+          <div class="health-desc">${r.gezondheid?.beschrijving||''}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon green"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div class="card-title">Diagnose & actie</div></div>
+        <div class="card-body">${r.diagnose||''}</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg></div><div class="card-title">Standplaats & zon</div></div>
+        <div class="card-body">
+          <p><strong>Ideaal:</strong> ${r.verzorging?.zon||''}</p>
+          ${r.standplaats_advies?.uitleg ? `<div class="section-divider"></div><div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Jouw standplaats</div><div class="location-advisory ${locClass}">${locIcon} ${r.standplaats_advies.uitleg}</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-verzorging" class="tab-pane">
+      <div class="card">
+        <div class="card-header"><div class="card-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 007-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 007 7z"/></svg></div><div class="card-title">Verzorging</div></div>
+        <div class="card-body">
+          <p><strong>Water:</strong> ${r.verzorging?.water||''}</p>
+          <p><strong>Grond:</strong> ${r.verzorging?.grond||''}</p>
+          <p><strong>Winterhard:</strong> ${r.verzorging?.winterhard?'Ja':'Nee, bescherming nodig bij vorst'}</p>
+          ${r.plant_info?.invasief_toelichting ? `<p><strong>Invasief:</strong> ${r.plant_info.invasief_toelichting}</p>` : ''}
+          ${tips ? `<div class="section-divider"></div><ul class="tips-list">${tips}</ul>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-snoeien" class="tab-pane">
+      <div class="card">
+        <div class="card-header"><div class="card-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div class="card-title">Snoeiadvies</div></div>
+        <div class="card-body">
+          <div class="cutting-row">
+            <span style="font-size:13px;color:var(--muted);">Nu snoeien?</span>
+            <span class="${r.snoeien?.moet_nu?'cutting-yes':'cutting-no'}">${r.snoeien?.moet_nu?'Ja, nu snoeien':'Nog niet nodig'}</span>
+          </div>
+          ${r.snoeien?.moet_nu && r.snoeien?.nu_uitleg ? `<p style="margin-bottom:8px;">${r.snoeien.nu_uitleg}</p>` : ''}
+          ${r.snoeien?.hoe_snoeien ? `
+          <div style="background:var(--green-mist);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Hoe snoeien</div>
+            <p style="font-size:13px;line-height:1.6;color:var(--ink);">${r.snoeien.hoe_snoeien}</p>
+          </div>` : ''}
+          <div class="section-divider"></div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Kalender</div>
+          <div class="month-grid">${pills}</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green-pale);"></div>Snoeien</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--amber-light);outline:1px solid #c8820a;"></div>Bloei</div>
+            <div class="legend-item"><div class="legend-dot" style="outline:2px solid var(--green-bright);"></div>Nu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-stekken" class="tab-pane">
+      <div class="card">
+        <div class="card-header"><div class="card-icon green"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12C12 7 7 3 2 3c0 5 4 9 10 9zM12 12c0-5 5-9 10-9-1 5-5 9-10 9"/></svg></div><div class="card-title">Stekken</div></div>
+        <div class="card-body">
+          <div class="cutting-row">
+            <span style="font-size:13px;color:var(--muted);">Stekken mogelijk?</span>
+            <span class="${r.stekken?.mogelijk?'cutting-yes':'cutting-no'}">${r.stekken?.mogelijk?'Ja':'Niet eenvoudig'}</span>
+            ${r.stekken?.mogelijk && r.stekken?.slagingskans ? `<span style="font-size:11px;color:var(--muted);margin-left:4px;">(${r.stekken.slagingskans})</span>` : ''}
+          </div>
+          ${r.stekken?.mogelijk ? `
+          ${r.stekken?.benodigdheden ? `<p style="margin-bottom:8px;"><strong>Wat heb je nodig:</strong> ${r.stekken.benodigdheden}</p>` : ''}
+          ${r.stekken?.stappen && r.stekken.stappen.length ? `
+          <div style="background:var(--green-mist);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">Hoe doe je het</div>
+            ${r.stekken.stappen.map((s,i) => `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:13px;line-height:1.5;"><span style="background:var(--green-bright);color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px;">${i+1}</span><span>${s.replace(/^Stap \d+:\s*/,'')}</span></div>`).join('')}
+          </div>` : ''}
+          ${r.stekken?.beste_periode ? `<p style="font-size:13px;color:var(--muted);">Beste periode: ${r.stekken.beste_periode}</p>` : ''}
+          ` : '<p style="color:var(--muted);font-size:13px;">Van deze plant zijn geen makkelijke stekken te maken.</p>'}
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-natuur" class="tab-pane">
+      <div class="card">
+        <div class="card-header"><div class="card-icon green"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div class="card-title">Ecologie & dieren</div></div>
+        <div class="card-body">
+          <div class="wildlife-grid">${wildlife}</div>
+          <p style="margin-top:10px;font-size:13px;color:var(--muted);">${r.ecologie?.toelichting||''}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('analyseResultaten').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const pane = document.getElementById('tab-' + name);
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function resetScan() {
+  images = [null, null, null];
+  const labels = ['Overzicht','Detail blad','Stam / bloem'];
+  [0,1,2].forEach(i => {
+    const slot = document.getElementById('slot' + i);
+    slot.classList.remove('filled');
+    slot.style.opacity = i === 0 ? '1' : '0.5';
+    slot.innerHTML = `${i===0?'<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>':'<div class="slot-num">+</div>'}<div class="slot-label">${labels[i]}</div>`;
+    slot.onclick = () => triggerFileInput(i);
+  });
+  ['plantedWhen','plantLocation','concern','plantAge'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('locationDesc').value = '';
+  _weetNietPoging = 0;
+  document.getElementById('analyseBtn').disabled = true;
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('errorBox').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+init();
+</script>
+
+<div id="keyOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(26,46,26,0.92);z-index:999;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#faf8f4;border-radius:16px;padding:24px;width:100%;max-width:360px;">
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#1a2e1a;margin-bottom:8px;">GreenEye</div>
+    <div style="font-size:13px;color:#6b7060;margin-bottom:20px;line-height:1.6;">Voer eenmalig je Anthropic API sleutel in. Deze wordt veilig op dit apparaat opgeslagen en is alleen voor jou zichtbaar.</div>
+    <input id="keyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off" style="width:100%;border:1.5px solid rgba(26,46,26,0.15);border-radius:10px;padding:12px 14px;font-family:inherit;font-size:14px;color:#1a1a18;outline:none;margin-bottom:12px;background:white;">
+    <button onclick="saveKey()" style="width:100%;background:#1a2e1a;color:#c8e6c8;border:none;border-radius:10px;padding:14px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;">Opslaan & starten</button>
+    <div style="font-size:11px;color:#6b7060;margin-top:12px;line-height:1.6;">Sleutel ophalen via <a href="https://platform.claude.com" target="_blank" style="color:#4a7c4a;">platform.claude.com</a> → API Keys. Kosten ~€0,01 per analyse.</div>
+  </div>
+</div>
+</body>
+</html>
